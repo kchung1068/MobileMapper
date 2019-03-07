@@ -6,12 +6,21 @@
 //  Copyright © 2019 Kyle Chung. All rights reserved.
 //
 
+
+
 import UIKit
+import MapKit
+
+
 
 class ViewController: UIViewController {
 
+    @IBOutlet var Maroon5: MKMapView!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         
     }
 
