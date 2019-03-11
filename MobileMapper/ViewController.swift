@@ -13,12 +13,14 @@ import MapKit
 
 
 
-class ViewController: UIViewController, CLLocationManagerDelegate {
+class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDelegate {
 
     @IBOutlet var Maroon5: MKMapView!
     
     let locationManager = CLLocationManager()
     var CurrentLocation: CLLocation!
+    var parks: [MKMapItem] = []
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +30,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.startUpdatingLocation()
+        Maroon5.delegate = self
         
     }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -35,21 +38,51 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         
         print("I like wildfire")
     }
-  
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if annotation.isEqual(Maroon5.userLocation) {
+            return nil
+        }
+        let pin = MKPinAnnotationView(annotation: annotation, reuseIdentifier: nil)
+        pin.canShowCallout = true
+        
+        return pin
+        
+    }
     @IBAction func whenZoombuttonpressed(_ sender: Any) {
         let center = CurrentLocation.coordinate
-        let span = MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        
+        let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         let region = MKCoordinateRegion(center: center, span: span)
         
         Maroon5.setRegion(region, animated: false)
+        print("I like tables")
         
         
     }
+    
+    
+   
     @IBAction func whenSearchbuttonpressed(_ sender: Any) {
-        
-        
-        
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = "Park"
+        let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        request.region = MKCoordinateRegion(center: CurrentLocation.coordinate, span: span)
+        let search = MKLocalSearch(request: request)
+        search.start { (response, error) in
+            guard let response = response else { return }
+                for mapItem in response.mapItems {
+                    self.parks.append(mapItem)
+                    let annotation = MKPointAnnotation()
+                    annotation.title = mapItem.name
+                    annotation.coordinate = mapItem.placemark.coordinate
+                    self.Maroon5.addAnnotation(annotation)
+                }
+            
+            // if let if there is data, what should I do?
+         // guard let if there is no data, what should I do?
+            print(response)
+            
+        }
+        print("hats")
     }
     
     
