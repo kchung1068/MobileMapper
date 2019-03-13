@@ -12,6 +12,17 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
     let locationManager = CLLocationManager()
     var CurrentLocation: CLLocation!
     var parks: [MKMapItem] = []
+    var initialRegion: MKCoordinateRegion!
+    var isInitialMapLoad = true
+    
+    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+        if isInitialMapLoad {
+            initialRegion = MKCoordinateRegion(center: Maroon5.centerCoordinate, span: Maroon5.region.span)
+            isInitialMapLoad = false
+            
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         locationManager.requestWhenInUseAuthorization(                                                                 )
@@ -40,12 +51,23 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
        
         
         pin.rightCalloutAccessoryView = button
-        pin.leftCalloutAccessoryView = newbutton
+        
         pin.detailCalloutAccessoryView?.addSubview(button)
+        let zoomButton = UIButton(type: .contactAdd)
+        pin.leftCalloutAccessoryView = zoomButton
+        
         return pin
     }
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        let button = control as! UIButton
+        if button.buttonType == .contactAdd {
+            mapView.setRegion(initialRegion, animated: true)
+            
+            return
+            
+        }
         var currentMapItem = MKMapItem()
+        
         if let title = view.annotation?.title, let parkName = title {
             for mapitem in parks {
                 if mapitem.name == parkName {
@@ -55,9 +77,24 @@ class ViewController: UIViewController, CLLocationManagerDelegate, MKMapViewDele
             
         }
         let placemark = currentMapItem.placemark
+        if let street = currentMapItem.placemark.thoroughfare {
+            createAlert(street)
+        }
+        if let phoneNumber = currentMapItem.phoneNumber {
+            
+            createAlert(phoneNumber)
+            
+        }
+        
         print(placemark)
        
         
+    }
+    func createAlert(_ phoneNumber: String) {
+        let alert = UIAlertController(title: nil, message: phoneNumber + "", preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "Ok", style: .destructive, handler: nil)
+        alert.addAction(okAction)
+        present(alert, animated: true, completion: nil)
     }
     @IBAction func whenZoombuttonpressed(_ sender: Any) {
         let center = CurrentLocation.coordinate
